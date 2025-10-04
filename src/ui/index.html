@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Event-Driven Image Processing Workshop</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .container { max-width: 800px; margin: auto; }
+        .upload-section { margin-bottom: 20px; }
+        .results { margin-top: 20px; }
+        img { max-width: 200px; margin: 10px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Event-Driven Image Processing Workshop</h1>
+        <div class="upload-section">
+            <h2>Upload Image</h2>
+            <input type="file" id="fileInput" accept="image/*">
+            <button onclick="uploadImage()">Upload</button>
+            <p id="status"></p>
+        </div>
+        <div class="results">
+            <h2>Processed Images</h2>
+            <div id="imageList"></div>
+        </div>
+    </div>
+    <script>
+        async function uploadImage() {
+            const fileInput = document.getElementById('fileInput');
+            const status = document.getElementById('status');
+            if (!fileInput.files[0]) {
+                status.textContent = 'Please select a file.';
+                return;
+            }
+            status.textContent = 'Uploading...';
+            // Note: In real implementation, use AWS SDK or presigned URL for upload
+            // This is placeholder for workshop
+            setTimeout(() => {
+                status.textContent = 'Uploaded! Processing via events...';
+                loadImages();
+            }, 2000);
+        }
+
+        async function loadImages() {
+            // Placeholder: In real UI, fetch from S3 or API
+            const imageList = document.getElementById('imageList');
+            imageList.innerHTML = '<p>Processed images will appear here after event processing.</p>';
+        }
+
+        // Load on page load
+        loadImages();
+    </script>
+</body>
+</html>

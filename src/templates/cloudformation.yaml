@@ -1,0 +1,153 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'CloudFormation template for Event-Driven Image Processing Workshop'
+
+Resources:
+  # S3 Buckets
+  InputBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub '${AWS::StackName}-input'
+
+  OutputBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub '${AWS::StackName}-output'
+
+  UiBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub '${AWS::StackName}-ui'
+      WebsiteConfiguration:
+        IndexDocument: index.html
+
+  # DynamoDB Table
+  MetadataTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: !Sub '${AWS::StackName}-metadata'
+      AttributeDefinitions:
+        - AttributeName: id
+          AttributeType: S
+      KeySchema:
+        - AttributeName: id
+          KeyType: HASH
+      BillingMode: PAY_PER_REQUEST
+
+  # SNS Topic
+  NotificationTopic:
+    Type: AWS::SNS::Topic
+    Properties:
+      TopicName: !Sub '${AWS::StackName}-notifications'
+
+  # IAM Role
+  LambdaRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub '${AWS::StackName}-lambda-role'
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+        - arn:aws:iam::aws:policy/AmazonS3FullAccess
+        - arn:aws:iam::aws:policy/AmazonDynamoDBFullAccess
+        - arn:aws:iam::aws:policy/AmazonEventBridgeFullAccess
+        - arn:aws:iam::aws:policy/AmazonBedrockFullAccess
+
+  # Lambda Functions
+  ResizeProcessor:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: !Sub '${AWS::StackName}-resize-processor'
+      Runtime: python3.13
+      Handler: resize_processor.lambda_handler
+      Code:
+        S3Bucket: ssennett-lab-persistent
+        S3Key: 2025/eventdrivenimageprocessing/lambdapackage.zip
+      Role: !GetAtt LambdaRole.Arn
+      Environment:
+        Variables:
+          INPUT_BUCKET: !Ref InputBucket
+          OUTPUT_BUCKET: !Ref OutputBucket
+          TABLE_NAME: !Ref MetadataTable
+      Timeout: 30
+
+  CaptionProcessor:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: !Sub '${AWS::StackName}-caption-processor'
+      Runtime: python3.13
+      Handler: caption_processor.lambda_handler
+      Code:
+        S3Bucket: ssennett-lab-persistent
+        S3Key: 2025/eventdrivenimageprocessing/lambdapackage.zip
+      Role: !GetAtt LambdaRole.Arn
+      Environment:
+        Variables:
+          OUTPUT_BUCKET: !Ref OutputBucket
+          TABLE_NAME: !Ref MetadataTable
+      Timeout: 60
+
+  # EventBridge Rule
+  S3UploadRule:
+    Type: AWS::Events::Rule
+    Properties:
+      EventPattern:
+        source:
+          - aws.s3
+        detail-type:
+          - Object Created
+        detail:
+          bucket:
+            name:
+              - !Ref InputBucket
+      State: ENABLED
+      Targets:
+        - Id: ResizeProcessorTarget
+          Arn: !GetAtt ResizeProcessor.Arn
+
+  # Permission for EventBridge to invoke Lambda
+  ResizeProcessorPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref ResizeProcessor
+      Action: lambda:InvokeFunction
+      Principal: events.amazonaws.com
+      SourceArn: !GetAtt S3UploadRule.Arn
+
+  # Optional Captioning Rule (disabled by default)
+  CaptioningRule:
+    Type: AWS::Events::Rule
+    Properties:
+      EventPattern:
+        source:
+          - image.processor
+        detail-type:
+          - Processing Complete
+      State: DISABLED  # Enable manually for optional extension
+      Targets:
+        - Id: CaptionProcessorTarget
+          Arn: !GetAtt CaptionProcessor.Arn
+
+  CaptionProcessorPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref CaptionProcessor
+      Action: lambda:InvokeFunction
+      Principal: events.amazonaws.com
+      SourceArn: !GetAtt CaptioningRule.Arn
+
+Outputs:
+  UiBucketUrl:
+    Description: 'URL for the static website'
+    Value: !Sub 'http://${UiBucket}.s3-website-${AWS::Region}.amazonaws.com'
+  InputBucketName:
+    Description: 'Input S3 bucket name'
+    Value: !Ref InputBucket
+  OutputBucketName:
+    Description: 'Output S3 bucket name'
+    Value: !Ref OutputBucket
