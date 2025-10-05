@@ -84,6 +84,8 @@ Resources:
       Code:
         S3Bucket: ssennett-lab-persistent
         S3Key: 2025/eventdrivenimageprocessing/lambdapackage.zip
+      Layers:
+        - arn:aws:lambda:us-east-1:770693421928:layer:Klayers-p312-pillow:2
       Role: !GetAtt LambdaRole.Arn
       Environment:
         Variables:
