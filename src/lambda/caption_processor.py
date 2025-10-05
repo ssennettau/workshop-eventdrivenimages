@@ -24,15 +24,21 @@ def lambda_handler(event, context):
 
         # Call Bedrock for caption
         response = bedrock.invoke_model(
-            modelId='amazon.titan-image-generator-v1',  # Adjust for vision model
+            modelId='anthropic.claude-3-5-sonnet-20240620-v1:0',
             body=json.dumps({
-                'inputText': 'Describe this image in a short caption.',
-                'image': image_b64
+                'messages': [{
+                    'role': 'user',
+                    'content': [
+                        {'type': 'text', 'text': 'Describe this image in a short caption.'},
+                        {'type': 'image', 'source': {'type': 'base64', 'media_type': 'image/jpeg', 'data': image_b64}}
+                    ]
+                }],
+                'max_tokens': 100
             })
         )
 
         result = json.loads(response['body'].read())
-        caption = result.get('caption', 'No caption generated')
+        caption = result['content'][0]['text']
 
         # Update metadata
         table = dynamodb.Table(TABLE_NAME)
