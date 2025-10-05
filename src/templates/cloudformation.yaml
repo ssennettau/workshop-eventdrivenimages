@@ -7,6 +7,9 @@ Resources:
     Type: AWS::S3::Bucket
     Properties:
       BucketName: !Sub '${AWS::StackName}-input'
+      NotificationConfiguration:
+        EventBridgeConfiguration:
+          EventBridgeEnabled: true
 
   OutputBucket:
     Type: AWS::S3::Bucket
@@ -76,7 +79,7 @@ Resources:
     Type: AWS::Lambda::Function
     Properties:
       FunctionName: !Sub '${AWS::StackName}-resize-processor'
-      Runtime: python3.13
+      Runtime: python3.12
       Handler: resize_processor.lambda_handler
       Code:
         S3Bucket: ssennett-lab-persistent
@@ -93,7 +96,7 @@ Resources:
     Type: AWS::Lambda::Function
     Properties:
       FunctionName: !Sub '${AWS::StackName}-caption-processor'
-      Runtime: python3.13
+      Runtime: python3.12
       Handler: caption_processor.lambda_handler
       Code:
         S3Bucket: ssennett-lab-persistent
