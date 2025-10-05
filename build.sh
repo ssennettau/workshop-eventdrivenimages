@@ -6,8 +6,6 @@ set -e
 
 # Lambda Packages
 cd ./src/lambda
-pip download pillow --platform manylinux_2_28_x86_64 --python-version 3.12 --only-binary=:all: --dest . >/dev/null
-unzip pillow*.whl >/dev/null
 zip \
     ./../../dist/lambdapackage.zip \
     ./* >/dev/null
