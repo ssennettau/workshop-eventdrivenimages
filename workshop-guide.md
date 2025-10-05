@@ -13,6 +13,17 @@
 4. Add observability.
 5. Optional: GenAI captioning.
 
+## Test Deployment Instructions
+
+For testing changes to the Lambda code:
+
+1. Run `./build.sh` to package and upload updated Lambda code (requires `prodartifacts` AWS profile).
+2. Manually empty the S3 buckets created by the stack (input, output, ui buckets) to allow stack deletion.
+3. Delete the CloudFormation stack: `aws cloudformation delete-stack --stack-name edip --profile sandbox`
+4. Redeploy the stack: `aws cloudformation deploy --template-file src/templates/cloudformation.yaml --stack-name edip --profile sandbox --capabilities CAPABILITY_IAM CAPABILITY_NAMED_IAM`
+
+This process ensures the Lambda package is updated, as CloudFormation may not detect changes in S3-hosted code.
+
 ## Troubleshooting
 - Check CloudWatch logs for errors.
 - Verify IAM permissions.
