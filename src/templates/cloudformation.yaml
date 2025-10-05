@@ -58,6 +58,19 @@ Resources:
         - arn:aws:iam::aws:policy/AmazonEventBridgeFullAccess
         - arn:aws:iam::aws:policy/AmazonBedrockFullAccess
 
+  # CloudWatch Log Groups
+  ResizeProcessorLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub '/aws/lambda/${AWS::StackName}-resize-processor'
+      RetentionInDays: 7
+
+  CaptionProcessorLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub '/aws/lambda/${AWS::StackName}-caption-processor'
+      RetentionInDays: 7
+
   # Lambda Functions
   ResizeProcessor:
     Type: AWS::Lambda::Function
