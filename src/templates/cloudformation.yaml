@@ -16,12 +16,7 @@ Resources:
     Properties:
       BucketName: !Sub '${AWS::StackName}-output'
 
-  UiBucket:
-    Type: AWS::S3::Bucket
-    Properties:
-      BucketName: !Sub '${AWS::StackName}-ui'
-      WebsiteConfiguration:
-        IndexDocument: index.html
+
 
   # DynamoDB Table
   MetadataTable:
@@ -61,21 +56,43 @@ Resources:
         - arn:aws:iam::aws:policy/AmazonEventBridgeFullAccess
         - arn:aws:iam::aws:policy/AmazonBedrockFullAccess
 
-  # CloudWatch Log Groups
-  ResizeProcessorLogGroup:
-    Type: AWS::Logs::LogGroup
-    Properties:
-      LogGroupName: !Sub '/aws/lambda/${AWS::StackName}-resize-processor'
-      RetentionInDays: 7
+   # CloudWatch Log Groups
+   InitialProcessorLogGroup:
+     Type: AWS::Logs::LogGroup
+     Properties:
+       LogGroupName: !Sub '/aws/lambda/${AWS::StackName}-initial-processor'
+       RetentionInDays: 7
 
-  CaptionProcessorLogGroup:
-    Type: AWS::Logs::LogGroup
-    Properties:
-      LogGroupName: !Sub '/aws/lambda/${AWS::StackName}-caption-processor'
-      RetentionInDays: 7
+   ResizeProcessorLogGroup:
+     Type: AWS::Logs::LogGroup
+     Properties:
+       LogGroupName: !Sub '/aws/lambda/${AWS::StackName}-resize-processor'
+       RetentionInDays: 7
 
-  # Lambda Functions
-  ResizeProcessor:
+   CaptionProcessorLogGroup:
+     Type: AWS::Logs::LogGroup
+     Properties:
+       LogGroupName: !Sub '/aws/lambda/${AWS::StackName}-caption-processor'
+       RetentionInDays: 7
+
+   # Lambda Functions
+   InitialProcessor:
+     Type: AWS::Lambda::Function
+     Properties:
+       FunctionName: !Sub '${AWS::StackName}-initial-processor'
+       Runtime: python3.12
+       Handler: initial_processor.lambda_handler
+       Code:
+         S3Bucket: ssennett-lab-persistent
+         S3Key: 2025/eventdrivenimageprocessing/lambdapackage.zip
+       Role: !GetAtt LambdaRole.Arn
+       Environment:
+         Variables:
+           INPUT_BUCKET: !Ref InputBucket
+           TABLE_NAME: !Ref MetadataTable
+       Timeout: 30
+
+   ResizeProcessor:
     Type: AWS::Lambda::Function
     Properties:
       FunctionName: !Sub '${AWS::StackName}-resize-processor'
@@ -110,35 +127,76 @@ Resources:
           TABLE_NAME: !Ref MetadataTable
       Timeout: 60
 
-  # EventBridge Rule
-  S3UploadRule:
-    Type: AWS::Events::Rule
-    Properties:
-      EventPattern:
-        source:
-          - aws.s3
-        detail-type:
-          - Object Created
-        detail:
-          bucket:
-            name:
-              - !Ref InputBucket
-      State: ENABLED
-      Targets:
-        - Id: ResizeProcessorTarget
-          Arn: !GetAtt ResizeProcessor.Arn
+   # EventBridge Rule
+   S3UploadRule:
+     Type: AWS::Events::Rule
+     Properties:
+       EventPattern:
+         source:
+           - aws.s3
+         detail-type:
+           - Object Created
+         detail:
+           bucket:
+             name:
+               - !Ref InputBucket
+       State: ENABLED
+       Targets:
+         - Id: InitialProcessorTarget
+           Arn: !GetAtt InitialProcessor.Arn
 
-  # Permission for EventBridge to invoke Lambda
-  ResizeProcessorPermission:
-    Type: AWS::Lambda::Permission
-    Properties:
-      FunctionName: !Ref ResizeProcessor
-      Action: lambda:InvokeFunction
-      Principal: events.amazonaws.com
-      SourceArn: !GetAtt S3UploadRule.Arn
+   # Permission for EventBridge to invoke Lambda
+   InitialProcessorPermission:
+     Type: AWS::Lambda::Permission
+     Properties:
+       FunctionName: !Ref InitialProcessor
+       Action: lambda:InvokeFunction
+       Principal: events.amazonaws.com
+       SourceArn: !GetAtt S3UploadRule.Arn
 
-  # Optional Captioning Rule (disabled by default)
-  CaptioningRule:
+   ResizeProcessorPermission:
+     Type: AWS::Lambda::Permission
+     Properties:
+       FunctionName: !Ref ResizeProcessor
+       Action: lambda:InvokeFunction
+       Principal: events.amazonaws.com
+       SourceArn: !GetAtt ResizeRule.Arn
+
+   # Resize Rule (disabled for extensibility demo)
+   ResizeRule:
+     Type: AWS::Events::Rule
+     Properties:
+       EventPattern:
+         source:
+           - edipworkshop.image.processor
+         detail-type:
+           - Image Uploaded
+       State: DISABLED
+       Targets:
+         - Id: ResizeProcessorTarget
+           Arn: !GetAtt ResizeProcessor.Arn
+
+   # Optional Captioning Rule (commented out)
+   # CaptioningRule:
+   #   Type: AWS::Events::Rule
+   #   Properties:
+   #     EventPattern:
+   #       source:
+   #         - edipworkshop.image.processor
+   #       detail-type:
+   #         - Processing Complete
+   #     State: DISABLED
+   #     Targets:
+   #       - Id: CaptionProcessorTarget
+   #         - Arn: !GetAtt CaptionProcessor.Arn
+
+   # CaptionProcessorPermission:
+   #   Type: AWS::Lambda::Permission
+   #   Properties:
+   #     FunctionName: !Ref CaptionProcessor
+   #     Action: lambda:InvokeFunction
+   #     Principal: events.amazonaws.com
+   #     SourceArn: !GetAtt CaptioningRule.Arn
     Type: AWS::Events::Rule
     Properties:
       EventPattern:
@@ -160,12 +218,9 @@ Resources:
       SourceArn: !GetAtt CaptioningRule.Arn
 
 Outputs:
-  UiBucketUrl:
-    Description: 'URL for the static website'
-    Value: !Sub 'http://${UiBucket}.s3-website-${AWS::Region}.amazonaws.com'
-  InputBucketName:
-    Description: 'Input S3 bucket name'
-    Value: !Ref InputBucket
-  OutputBucketName:
-    Description: 'Output S3 bucket name'
-    Value: !Ref OutputBucket
+   InputBucketName:
+     Description: 'Input S3 bucket name'
+     Value: !Ref InputBucket
+   OutputBucketName:
+     Description: 'Output S3 bucket name'
+     Value: !Ref OutputBucket

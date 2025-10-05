@@ -40,21 +40,20 @@ def lambda_handler(event, context):
         output_key = f"processed/{key}"
         s3.put_object(Bucket=OUTPUT_BUCKET, Key=output_key, Body=output_data, ContentType='image/jpeg')
 
-        # Store metadata
+        # Update metadata
         table = dynamodb.Table(TABLE_NAME)
-        table.put_item(Item={
-            'id': key,
-            'original_size': len(image_data),
-            'processed_size': len(output_data),
-            'timestamp': datetime.utcnow().isoformat(),
-            'status': 'success'
-        })
+        table.update_item(
+            Key={'id': key},
+            UpdateExpression='SET processed_size = :ps, #s = :st',
+            ExpressionAttributeNames={'#s': 'status'},
+            ExpressionAttributeValues={':ps': len(output_data), ':st': 'processed'}
+        )
 
         # Emit event for optional captioning
         events.put_events(
             Entries=[{
                 'EventBusName': EVENT_BUS_NAME,
-                'Source': 'image.processor',
+                'Source': 'edipworkshop.image.processor',
                 'DetailType': 'Processing Complete',
                 'Detail': json.dumps({
                     'image_key': key,
