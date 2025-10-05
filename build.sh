@@ -5,7 +5,7 @@
 # Lambda Packages
 cd ./src/lambda
 zip \
-    ./../../lambdapackage.zip \
+    ./../../dist/lambdapackage.zip \
     ./*
 cd ../../
 aws s3 cp \
