@@ -1,3 +1,8 @@
 .opencode
 
 dist/*.zip
+
+# Lambda dependencies
+src/lambda/pillow*.whl
+src/lambda/PIL/
+src/lambda/pillow*.dist-info/
