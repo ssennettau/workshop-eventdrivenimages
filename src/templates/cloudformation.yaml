@@ -113,19 +113,19 @@ Resources:
 
   CaptionProcessor:
     Type: AWS::Lambda::Function
-  Properties:
-    FunctionName: !Sub '${AWS::StackName}-caption-processor'
-    Runtime: python3.12
-    Handler: caption_processor.lambda_handler
-    Code:
-      S3Bucket: ssennett-lab-persistent
-      S3Key: 2025/eventdrivenimageprocessing/lambdapackage.zip
-    Role: !GetAtt LambdaRole.Arn
-    Environment:
-      Variables:
-        OUTPUT_BUCKET: !Ref OutputBucket
-        TABLE_NAME: !Ref MetadataTable
-    Timeout: 60
+    Properties:
+      FunctionName: !Sub '${AWS::StackName}-caption-processor'
+      Runtime: python3.12
+      Handler: caption_processor.lambda_handler
+      Code:
+        S3Bucket: ssennett-lab-persistent
+        S3Key: 2025/eventdrivenimageprocessing/lambdapackage.zip
+      Role: !GetAtt LambdaRole.Arn
+      Environment:
+        Variables:
+          OUTPUT_BUCKET: !Ref OutputBucket
+          TABLE_NAME: !Ref MetadataTable
+      Timeout: 60
 
   # EventBridge Rule
   S3UploadRule:
