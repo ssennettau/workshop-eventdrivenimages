@@ -6,7 +6,7 @@ Resources:
   InputBucket:
     Type: AWS::S3::Bucket
     Properties:
-      BucketName: !Sub '${AWS::StackName}-input'
+      BucketName: !Sub '${AWS::StackName}-edip-input'
       NotificationConfiguration:
         EventBridgeConfiguration:
           EventBridgeEnabled: true
@@ -14,7 +14,7 @@ Resources:
   OutputBucket:
     Type: AWS::S3::Bucket
     Properties:
-      BucketName: !Sub '${AWS::StackName}-output'
+      BucketName: !Sub '${AWS::StackName}-edip-output'
 
 
 
@@ -22,7 +22,7 @@ Resources:
   MetadataTable:
     Type: AWS::DynamoDB::Table
     Properties:
-      TableName: !Sub '${AWS::StackName}-metadata'
+      TableName: !Sub '${AWS::StackName}-edip-metadata'
       AttributeDefinitions:
         - AttributeName: id
           AttributeType: S
@@ -35,13 +35,13 @@ Resources:
   NotificationTopic:
     Type: AWS::SNS::Topic
     Properties:
-      TopicName: !Sub '${AWS::StackName}-notifications'
+      TopicName: !Sub '${AWS::StackName}-edip-notifications'
 
   # IAM Role
   LambdaRole:
     Type: AWS::IAM::Role
     Properties:
-      RoleName: !Sub '${AWS::StackName}-lambda-role'
+      RoleName: !Sub '${AWS::StackName}-edip-lambda-role'
       AssumeRolePolicyDocument:
         Version: '2012-10-17'
         Statement:
@@ -60,26 +60,26 @@ Resources:
   InitialProcessorLogGroup:
     Type: AWS::Logs::LogGroup
     Properties:
-      LogGroupName: !Sub '/aws/lambda/${AWS::StackName}-initial-processor'
+      LogGroupName: !Sub '/aws/lambda/${AWS::StackName}-edip-initial-processor'
       RetentionInDays: 7
 
   ResizeProcessorLogGroup:
     Type: AWS::Logs::LogGroup
     Properties:
-      LogGroupName: !Sub '/aws/lambda/${AWS::StackName}-resize-processor'
+      LogGroupName: !Sub '/aws/lambda/${AWS::StackName}-edip-resize-processor'
       RetentionInDays: 7
 
   CaptionProcessorLogGroup:
     Type: AWS::Logs::LogGroup
     Properties:
-      LogGroupName: !Sub '/aws/lambda/${AWS::StackName}-caption-processor'
+      LogGroupName: !Sub '/aws/lambda/${AWS::StackName}-edip-caption-processor'
       RetentionInDays: 7
 
   # Lambda Functions
   InitialProcessor:
     Type: AWS::Lambda::Function
     Properties:
-      FunctionName: !Sub '${AWS::StackName}-initial-processor'
+      FunctionName: !Sub '${AWS::StackName}-edip-initial-processor'
       Runtime: python3.12
       Handler: initial_processor.lambda_handler
       Code:
@@ -95,7 +95,7 @@ Resources:
   ResizeProcessor:
     Type: AWS::Lambda::Function
     Properties:
-      FunctionName: !Sub '${AWS::StackName}-resize-processor'
+      FunctionName: !Sub '${AWS::StackName}-edip-resize-processor'
       Runtime: python3.12
       Handler: resize_processor.lambda_handler
       Code:
@@ -114,7 +114,7 @@ Resources:
   CaptionProcessor:
     Type: AWS::Lambda::Function
     Properties:
-      FunctionName: !Sub '${AWS::StackName}-caption-processor'
+      FunctionName: !Sub '${AWS::StackName}-edip-caption-processor'
       Runtime: python3.12
       Handler: caption_processor.lambda_handler
       Code:
