@@ -17,7 +17,7 @@ EVENT_BUS_NAME = os.environ.get('EVENT_BUS_NAME', 'default')
 def lambda_handler(event, context):
     # Parse EventBridge S3 event
     detail = event['detail']
-    bucket = detail['bucket']['name']
+    bucket = detail['bucket']
     key = detail['object']['key']
 
     if bucket != INPUT_BUCKET:
