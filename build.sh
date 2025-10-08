@@ -5,6 +5,7 @@
 set -e
 
 # Lambda Packages
+rm ./dist/lambdapackage.zip >/dev/null 2>&1 || true
 cd ./src/lambda
 zip \
     ./../../dist/lambdapackage.zip \
