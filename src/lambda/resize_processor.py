@@ -20,8 +20,8 @@ def lambda_handler(event, context):
 
     # Parse EventBridge S3 event
     detail = event['detail']
-    bucket = detail['bucket']
-    key = detail['object']['key']
+    bucket = INPUT_BUCKET
+    key = detail['image_key']
 
     if bucket != INPUT_BUCKET:
         return
