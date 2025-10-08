@@ -1,37 +1,6 @@
 # Workshop Guide: Event-Driven Image Processing
 
-## Pre-Setup Instructions
-1. Ensure AWS account with free tier.
-2. Request Bedrock model access if doing GenAI extension.
-3. Run `./build.sh` to package Lambda code and upload to hosted S3 bucket.
-4. Deploy CloudFormation stack using the provided deploy command.
-
-## Hands-on Steps
-1. Upload images to the input S3 bucket to trigger initial metadata capture.
-2. Enable the resize EventBridge rule to add image processing.
-3. Uncomment and enable the caption rule for AI captioning.
-4. Experiment with extending the pipeline (e.g., add watermarking, format conversion).
-5. Monitor the event flow with CloudWatch and EventBridge.
-
-## Test Deployment Instructions
-
-For testing changes to the Lambda code:
-
-1. Run `./build.sh` to package and upload updated Lambda code (requires `prodartifacts` AWS profile).
-2. Manually empty the S3 buckets created by the stack (input, output buckets) to allow stack deletion.
-3. Delete the CloudFormation stack: `aws cloudformation delete-stack --stack-name edip --profile sandbox`
-4. Redeploy the stack: `aws cloudformation deploy --template-file src/templates/cloudformation.yaml --stack-name edip --profile sandbox --capabilities CAPABILITY_IAM CAPABILITY_NAMED_IAM`
-
-This process ensures the Lambda package is updated, as CloudFormation may not detect changes in S3-hosted code.
-
-## Troubleshooting
-- Check CloudWatch logs for each Lambda function.
-- Verify IAM permissions and EventBridge rules.
-- Ensure rules are enabled for the desired processing phases.
-- Check DynamoDB for metadata updates.
-- Monitor EventBridge for event delivery.
-
-## Part 0 - Deploying the Stack
+## 📦 Part 0 - Deploying the Stack
 
 Before we begin, we need to deploy the CloudFormation stack that sets up all necessary resources.
 
@@ -66,7 +35,7 @@ Before we begin, we need to deploy the CloudFormation stack that sets up all nec
 
 The **Resources** tab will help you locate all the resources used in this workshop.
 
-## Part 1 - Initial Processing
+## 📝 Part 1 - Initial Processing
 
 Let's see how the initial image processing works. 
 
@@ -95,7 +64,7 @@ Let's see how the initial image processing works.
 
 12. Observe the DynamoDB table. You should see a new item added with metadata about the uploaded image.
 
-## Part 2 - Resizing Images
+## 📸 Part 2 - Resizing Images
 
 Now that we have the initial metadata capture working, let's add image resizing to the pipeline. The Lambda function has already been created, but the EventBridge rule that triggers it is disabled by default.
 
@@ -113,7 +82,7 @@ Now that we have the initial metadata capture working, let's add image resizing 
 
 7. In the DynamoDB console, you should see the metadata for the uploaded image updated with the new resized image information.
 
-## Part 3 - Adding AI Captions
+## 🤖 Part 3 - Adding AI Captions
 
 Finally, we're going to enable smart captioning with AI. This step requires access to Bedrock models. If you don't have access, you can skip this part, or [enable AI model access](https://docs.aws.amazon.com/bedrock/latest/userguide/model-access-modify.html), specifically to Anthropic Claude 3.5 Sonnet in `us-east-1`.
 
@@ -155,7 +124,7 @@ Instead of enabling an existing rule, we will take the next step and configure t
 
 15. Review the settings and click **Create rule**.
 
-## Part 4 - Custom Integration (Polly for Audio Captions)
+## 🔈 Part 4 - Custom Integration (Polly for Audio Captions)
 
 Now, it's time to experiment!
 
