@@ -2,6 +2,8 @@
 
 dist/*.zip
 
+.DS_Store
+
 # Lambda dependencies
 src/lambda/pillow*.whl
 src/lambda/PIL/
