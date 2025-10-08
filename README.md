@@ -19,10 +19,10 @@ graph TD
     B -->|S3 Event| C[Initial Lambda]
     C -->|Store Metadata| D[DynamoDB Table]
     C -->|Image Uploaded Event| E[EventBridge]
-    E -->|Resize Rule (Disabled)| F[Resize Lambda]
+    E -->|"Resize Rule (Disabled)"| F[Resize Lambda]
     F -->|Process & Update| D
     F -->|Processing Complete| G[EventBridge]
-    G -->|Caption Rule (Commented)| H[Caption Lambda]
+    G -->|"Caption Rule (Commented)"| H[Caption Lambda]
     H -->|AI Caption| D
     F -->|Store Processed| I[S3 Output Bucket]
     J[CloudWatch] -->|Metrics/Logs| C
