@@ -154,3 +154,11 @@ Instead of enabling an existing rule, we will take the next step and configure t
 14. Click **Next** to skip the tags page.
 
 15. Review the settings and click **Create rule**.
+
+## Part 4 - Custom Integration (Polly for Audio Captions)
+
+Now, it's time to experiment!
+
+Build an AWS Lambda Function to listen for events from EventBridge and use Amazon Polly to generate audio captions for images. Note that you can accomplish this without modifying any existing code, only adding new code.
+
+Happy clouding!
