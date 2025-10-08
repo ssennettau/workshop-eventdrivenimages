@@ -7,9 +7,10 @@ Resources:
     Type: AWS::S3::Bucket
     Properties:
       BucketName: !Sub '${AWS::StackName}-edip-input'
-      NotificationConfiguration:
-        EventBridgeConfiguration:
-          EventBridgeEnabled: true
+      # Disabled by default - can be enabled for testing
+      # NotificationConfiguration:
+      #   EventBridgeConfiguration:
+      #     EventBridgeEnabled: true
 
   OutputBucket:
     Type: AWS::S3::Bucket
