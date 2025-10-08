@@ -10,6 +10,9 @@ OUTPUT_BUCKET = os.environ['OUTPUT_BUCKET']
 TABLE_NAME = os.environ['TABLE_NAME']
 
 def lambda_handler(event, context):
+    # Output event for debugging
+    print("Received event:", json.dumps(event))
+
     detail = event['detail']
     image_key = detail['image_key']
 

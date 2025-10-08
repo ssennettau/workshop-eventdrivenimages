@@ -15,6 +15,9 @@ TABLE_NAME = os.environ['TABLE_NAME']
 EVENT_BUS_NAME = os.environ.get('EVENT_BUS_NAME', 'default')
 
 def lambda_handler(event, context):
+    # Output event for debugging
+    print("Received event:", json.dumps(event))
+
     # Parse EventBridge S3 event
     detail = event['detail']
     bucket = detail['bucket']
